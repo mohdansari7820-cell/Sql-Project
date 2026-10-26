@@ -168,3 +168,146 @@ JOIN order_items oi ON o.order_id = oi.order_id
 GROUP BY c.city
 ORDER BY revenue DESC
 LIMIT 3;
+
+
+-- ===================================================
+-- PART 3: Advanced SQL - Window Functions (21-30)
+-- ===================================================
+
+-- 21. Rank Customers by Total Revenue
+WITH customer_revenue AS (
+    SELECT
+        o.customer_id,
+        SUM(oi.quantity * oi.unit_price) AS revenue
+    FROM orders o
+    JOIN order_items oi ON o.order_id = oi.order_id
+    GROUP BY o.customer_id
+)
+SELECT
+    customer_id,
+    revenue,
+    DENSE_RANK() OVER (ORDER BY revenue DESC) AS revenue_rank
+FROM customer_revenue;
+
+-- 22. Find the Top Selling Product in Each Category
+WITH product_sales AS (
+    SELECT
+        p.category,
+        p.product_name,
+        SUM(oi.quantity) AS total_sold
+    FROM products p
+    JOIN order_items oi ON p.product_id = oi.product_id
+    GROUP BY p.category, p.product_name
+)
+SELECT *
+FROM (
+    SELECT *,
+           ROW_NUMBER() OVER (PARTITION BY category ORDER BY total_sold DESC) AS rn
+    FROM product_sales
+) t
+WHERE rn = 1;
+
+-- 23. Calculate Running Revenue by Order Date
+WITH daily_sales AS (
+    SELECT
+        o.order_date,
+        SUM(oi.quantity * oi.unit_price) AS daily_revenue
+    FROM orders o
+    JOIN order_items oi ON o.order_id = oi.order_id
+    GROUP BY o.order_date
+)
+SELECT
+    order_date,
+    daily_revenue,
+    SUM(daily_revenue) OVER (ORDER BY order_date) AS running_revenue
+FROM daily_sales;
+
+-- 24. Find the Previous Order Date for Each Customer
+SELECT
+    customer_id,
+    order_id,
+    order_date,
+    LAG(order_date) OVER (PARTITION BY customer_id ORDER BY order_date) AS previous_order_date
+FROM orders;
+
+-- 25. Find the Next Order Date for Each Customer
+SELECT
+    customer_id,
+    order_id,
+    order_date,
+    LEAD(order_date) OVER (PARTITION BY customer_id ORDER BY order_date) AS next_order_date
+FROM orders;
+
+-- 26. Calculate Days Between Consecutive Orders
+SELECT
+    customer_id,
+    order_date,
+    order_date - LAG(order_date) OVER (PARTITION BY customer_id ORDER BY order_date) AS days_between_orders
+FROM orders;
+
+-- 27. Find the Top 3 Customers by Revenue
+WITH customer_revenue AS (
+    SELECT
+        o.customer_id,
+        SUM(oi.quantity * oi.unit_price) AS revenue
+    FROM orders o
+    JOIN order_items oi ON o.order_id = oi.order_id
+    GROUP BY o.customer_id
+)
+SELECT *
+FROM (
+    SELECT *,
+           DENSE_RANK() OVER (ORDER BY revenue DESC) AS rnk
+    FROM customer_revenue
+) t
+WHERE rnk <= 3;
+
+-- 28. Find Each Product's Contribution to Total Revenue
+WITH product_revenue AS (
+    SELECT
+        p.product_name,
+        SUM(oi.quantity * oi.unit_price) AS revenue
+    FROM products p
+    JOIN order_items oi ON p.product_id = oi.product_id
+    GROUP BY p.product_name
+)
+SELECT
+    product_name,
+    revenue,
+    ROUND(100.0 * revenue / SUM(revenue) OVER (), 2) AS revenue_percentage
+FROM product_revenue
+ORDER BY revenue DESC;
+
+-- 29. Find Monthly Revenue Growth
+WITH monthly_sales AS (
+    SELECT
+        DATE_TRUNC('month', o.order_date) AS month,
+        SUM(oi.quantity * oi.unit_price) AS revenue
+    FROM orders o
+    JOIN order_items oi ON o.order_id = oi.order_id
+    GROUP BY DATE_TRUNC('month', o.order_date)
+)
+SELECT
+    month,
+    revenue,
+    LAG(revenue) OVER (ORDER BY month) AS previous_month_revenue,
+    ROUND(100.0 * (revenue - LAG(revenue) OVER (ORDER BY month)) / NULLIF(LAG(revenue) OVER (ORDER BY month), 0), 2) AS growth_percentage
+FROM monthly_sales;
+
+-- 30. Find the Highest Value Order for Each Customer
+WITH order_values AS (
+    SELECT
+        o.customer_id,
+        o.order_id,
+        SUM(oi.quantity * oi.unit_price) AS order_value
+    FROM orders o
+    JOIN order_items oi ON o.order_id = oi.order_id
+    GROUP BY o.customer_id, o.order_id
+)
+SELECT *
+FROM (
+    SELECT *,
+           ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_value DESC) AS rn
+    FROM order_values
+) t
+WHERE rn = 1;

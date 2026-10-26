@@ -64,7 +64,7 @@ ORDER BY revenue DESC;
 
 
 -- ===================================================
--- PART 3: Intermediate Business Questions (11-20)
+-- PART 2: Intermediate Business Questions (11-20)
 -- ===================================================
 
 -- 11. Find Repeat Customers

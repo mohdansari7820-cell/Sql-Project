@@ -1,20 +1,49 @@
-# E-Commerce Sales Analysis - PostgreSQL
+# E-Commerce Sales Analysis - SQL Project
+
+An end-to-end E-Commerce Data Analysis project solving **40+ real-world business problems** using PostgreSQL.
+
+This project demonstrates skills in JOINS, Aggregations, Window Functions, CTEs, and Advanced Business Analytics (CLV, RFM, Cohort Analysis, Churn).
 
 ## 📊 Project Overview
-Solved 10 real-world business problems on an E-Commerce dataset using PostgreSQL to analyze revenue, customers, products, and sales trends.
+Analyzed customer, orders, and product data to derive insights on revenue, customer retention, and product performance.
 
-## 🛠️ Skills Used
-- PostgreSQL, Aggregate Functions, JOINs, GROUP BY, DATE_TRUNC, Business KPI Calculations
+## 🗂️ Dataset
+- `customers` - Customer details
+- `orders` - Order history with status
+- `products` - Product catalog
+- `order_items` - Order line items
 
-## 📂 Queries Covered
-1. Total Revenue, Orders, Customers, Products
-2. Average Order Value (AOV)
-3. Top 5 Selling Products & Customers
-4. Revenue by Category & City
-5. Monthly Revenue Trend
+## 🧠 SQL Concepts Covered (40 Queries)
 
-## 📈 Business Impact
-Helps track key KPIs, identify best-selling products, top customers, and revenue trends for business growth.
+**Part 1: Basics (1-10)** - SELECT, WHERE, GROUP BY, ORDER BY, SUM, COUNT
 
-## 🗂️ Files
-- queries.sql - All 10 SQL queries (Part 1)
+**Part 2: Intermediate (11-20)** - LEFT JOIN, HAVING, Subqueries, Revenue Analysis, Customer Segmentation
+
+**Part 3: Advanced Window Functions (21-30)**
+- DENSE_RANK, ROW_NUMBER, LAG, LEAD
+- Running Revenue, Growth %, Contribution %
+
+**Part 4: Advanced Business Analytics (31-40)**
+- Customer Lifetime Value (CLV)
+- Repeat Purchase Rate & Retention
+- Product Affinity (Frequently Bought Together)
+- RFM Analysis & Churn Analysis
+- Cohort Retention Analysis
+
+## 📁 Files
+- `queries.sql` - Contains all 40+ business queries
+- `schema.sql` - Table structures
+- `ERD.png` - Database diagram
+
+## 🚀 Key Business Insights
+- Top Revenue Products & Categories
+- Top 3 Cities & Customers by Revenue
+- Customer Churn & At-Risk Customers
+- Monthly Revenue Growth & Running Totals
+
+## 🛠️ Tech Stack
+- PostgreSQL
+- SQL (Window Functions, CTEs)
+
+---
+⭐ If you like this project, give it a star!

@@ -311,3 +311,127 @@ FROM (
     FROM order_values
 ) t
 WHERE rn = 1;
+
+-- ===================================================
+-- PART 4: Advanced Business Analytics (31-40)
+-- ===================================================
+
+-- 31. Calculate Customer Lifetime Value (CLV)
+SELECT
+    o.customer_id,
+    SUM(oi.quantity * oi.unit_price) AS customer_lifetime_value
+FROM orders o
+JOIN order_items oi ON o.order_id = oi.order_id
+WHERE o.status = 'Delivered'
+GROUP BY o.customer_id
+ORDER BY customer_lifetime_value DESC;
+
+-- 32. Calculate Repeat Purchase Rate
+WITH customer_orders AS (
+    SELECT customer_id, COUNT(*) AS total_orders
+    FROM orders WHERE status = 'Delivered' GROUP BY customer_id
+)
+SELECT
+    ROUND(100.0 * COUNT(CASE WHEN total_orders > 1 THEN 1 END) / COUNT(*), 2) AS repeat_purchase_rate
+FROM customer_orders;
+
+-- 33. Find New vs Returning Customers
+WITH first_order AS (
+    SELECT customer_id, MIN(order_date) AS first_order_date
+    FROM orders WHERE status='Delivered' GROUP BY customer_id
+)
+SELECT
+    CASE WHEN o.order_date = f.first_order_date THEN 'New Customer' ELSE 'Returning Customer' END AS customer_type,
+    COUNT(*) AS total_orders
+FROM orders o
+JOIN first_order f ON o.customer_id = f.customer_id
+WHERE o.status = 'Delivered'
+GROUP BY customer_type;
+
+-- 34. Find Customer Retention by Month (Active Customers)
+WITH monthly_orders AS (
+    SELECT DISTINCT customer_id, DATE_TRUNC('month', order_date) AS order_month
+    FROM orders WHERE status='Delivered'
+)
+SELECT order_month, COUNT(DISTINCT customer_id) AS active_customers
+FROM monthly_orders
+GROUP BY order_month
+ORDER BY order_month;
+
+-- 35. Find Customers Who Purchased from Multiple Categories
+SELECT o.customer_id, COUNT(DISTINCT p.category) AS categories_purchased
+FROM orders o
+JOIN order_items oi ON o.order_id = oi.order_id
+JOIN products p ON oi.product_id = p.product_id
+WHERE o.status = 'Delivered'
+GROUP BY o.customer_id
+HAVING COUNT(DISTINCT p.category) > 1;
+
+-- 36. Find the Most Frequently Purchased Product Pair
+SELECT oi1.product_id AS product_1, oi2.product_id AS product_2, COUNT(*) AS purchase_count
+FROM order_items oi1
+JOIN order_items oi2 ON oi1.order_id = oi2.order_id AND oi1.product_id < oi2.product_id
+JOIN orders o ON oi1.order_id = o.order_id
+WHERE o.status = 'Delivered'
+GROUP BY oi1.product_id, oi2.product_id
+ORDER BY purchase_count DESC
+LIMIT 10;
+
+-- 37. Calculate Average Days Between Orders
+WITH customer_orders AS (
+    SELECT customer_id, order_date,
+           LAG(order_date) OVER (PARTITION BY customer_id ORDER BY order_date) AS previous_order
+    FROM orders WHERE status='Delivered'
+)
+SELECT customer_id, ROUND(AVG(order_date - previous_order), 2) AS avg_days_between_orders
+FROM customer_orders
+WHERE previous_order IS NOT NULL
+GROUP BY customer_id;
+
+-- 38. Find the Fastest Growing Product Category
+WITH monthly_category_sales AS (
+    SELECT DATE_TRUNC('month', o.order_date) AS month, p.category, SUM(oi.quantity * oi.unit_price) AS revenue
+    FROM orders o
+    JOIN order_items oi ON o.order_id = oi.order_id
+    JOIN products p ON oi.product_id = p.product_id
+    WHERE o.status='Delivered'
+    GROUP BY month, p.category
+)
+SELECT month, category, revenue,
+       revenue - LAG(revenue) OVER (PARTITION BY category ORDER BY month) AS revenue_growth
+FROM monthly_category_sales;
+
+-- 39. Identify Customers at Risk of Churn (No order in 90 days)
+SELECT customer_id, MAX(order_date) AS last_order_date
+FROM orders
+GROUP BY customer_id
+HAVING MAX(order_date) < CURRENT_DATE - INTERVAL '90 days';
+
+-- 40. Perform RFM Analysis
+SELECT customer_id,
+       CURRENT_DATE - MAX(o.order_date) AS recency,
+       COUNT(o.order_id) AS frequency,
+       SUM(oi.quantity * oi.unit_price) AS monetary
+FROM orders o
+JOIN order_items oi ON o.order_id = oi.order_id
+WHERE o.status = 'Delivered'
+GROUP BY customer_id
+ORDER BY monetary DESC;
+
+-- 41. Cohort Retention Analysis (BONUS - Corrected)
+WITH first_purchase AS (
+  SELECT customer_id, DATE_TRUNC('month', MIN(order_date)) AS cohort_month
+  FROM orders WHERE status='Delivered' GROUP BY customer_id
+),
+monthly_orders AS (
+  SELECT DISTINCT customer_id, DATE_TRUNC('month', order_date) AS order_month
+  FROM orders WHERE status='Delivered'
+)
+SELECT 
+  f.cohort_month,
+  m.order_month,
+  COUNT(DISTINCT m.customer_id) AS retained_customers
+FROM first_purchase f
+JOIN monthly_orders m ON f.customer_id = m.customer_id
+GROUP BY f.cohort_month, m.order_month
+ORDER BY f.cohort_month;

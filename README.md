@@ -1,20 +1,20 @@
-# PostgreSQL Customer Analytics Project
+# E-Commerce Sales Analysis - PostgreSQL
 
 ## 📊 Project Overview
-Analyzed customer purchasing behavior using PostgreSQL to identify new vs returning users, retention cohorts, and multi-category buyers.
+Solved 10 real-world business problems on an E-Commerce dataset using PostgreSQL to analyze revenue, customers, products, and sales trends.
 
 ## 🛠️ Skills Used
-- PostgreSQL, JOINs, CTEs, Window Functions, GROUP BY, CASE WHEN
+- PostgreSQL, Aggregate Functions, JOINs, GROUP BY, DATE_TRUNC, Business KPI Calculations
 
 ## 📂 Queries Covered
-1. New vs Returning Users
-2. Monthly Retention Analysis  
-3. Customers Buying in Multiple Categories
-4. Repeat Purchase Rate
+1. Total Revenue, Orders, Customers, Products
+2. Average Order Value (AOV)
+3. Top 5 Selling Products & Customers
+4. Revenue by Category & City
+5. Monthly Revenue Trend
 
 ## 📈 Business Impact
-Helps marketing team target retention campaigns and cross-sell strategies.
+Helps track key KPIs, identify best-selling products, top customers, and revenue trends for business growth.
 
 ## 🗂️ Files
-- queries.sql - All SQL queries
-- dataset.csv (sample)
+- queries.sql - All 10 SQL queries (Part 1)
